@@ -12,7 +12,7 @@ This experiment investigates how UART affects the behavior of LED. The green LED
 Figure 1 shows the pinout of STM32 F446RE.
 The signals are displayed through usb port and shown through PuTTY. The baud rate is set at 115200, 1.15MHz.
 # Part 1 UART Polling Mode
-This is the simplest method to transmit and receive signals; we can utilize the in-built function provided by STM32 HAL_UART_Transmit() and HAL_UART_Receive(). Polling is basically receiver constantly asking the system, are you ready every cycle. If the user has input a character, the routine is carried out.
+This is the simplest method to transmit and receive signals; we can utilize the in-built function provided by STM32 *HAL_UART_Transmit()* and *HAL_UART_Receive()*. Polling is basically receiver constantly asking the system, are you ready every cycle. If the user has input a character, the routine is carried out.
 There are a few cons with this method:
 1)	The processor has to check the buffer every cycle; this is a very CPU-intensive task and consumes a lot of energy.
 2)	If the system is doing some other important tasks before the receiving the signals, but the receiving takes up a few milliseconds (to prevent blocking that important tasks), the receiver may miss the signal entirely.
@@ -34,23 +34,23 @@ Figure 3 shows the signal being decoded with PulseView.
 In a real experiment, we can see that the green LED does not follow the click of 1, it only flashes when it is ready. Pressing 2 will check if the button is pressed or released, it is also very laggy because of the polling mode we are using.
 
 # Part 2 UART Blocking Interrupt Mode
-To use interrupt in UART, we have to enable NVIC global interrupt in cubeIDE->connectivity->USART2. It is given the topmost preempt priority (priority 0). Instead of the earlier HAL functions, we use the interrupt versions: HAL_UART_Transmit_IT() and HAL_UART_Receive_IT().
+To use interrupt in UART, we have to enable NVIC global interrupt in cubeIDE->connectivity->USART2. It is given the topmost preempt priority (priority 0). Instead of the earlier HAL functions, we use the interrupt versions: *HAL_UART_Transmit_IT()* and *HAL_UART_Receive_IT()*.
 
-When a character is sent, the NVIC interrupts the current task and execute the Interrupt Service Routine (ISR). The user-defined HAL_UART_RxCpltCallback() function checks the USART called and put the input symbol into currentUserInput variable. It also resets HAL_UART_Receive_IT() so we don’t miss any future signals. 
+When a character is sent, the NVIC interrupts the current task and execute the Interrupt Service Routine (ISR). The user-defined *HAL_UART_RxCpltCallback()* function checks the USART called and put the input symbol into currentUserInput variable. It also resets HAL_UART_Receive_IT() so we don’t miss any future signals. 
 
-In the main while loop, we force the system to blink the yellow LED using HAL_Delay(), which is a blocking function, which means, the processor is forced to wait for the LED to complete a cycle before servicing the ISR. 
+In the main while loop, we force the system to blink the yellow LED using *HAL_Delay()*, which is a blocking function, which means, the processor is forced to wait for the LED to complete a cycle before servicing the ISR. 
 ## Logic Analyzer
 Using a logic analyzer, we can observe the green LED (PA5) and yellow LED (PA6). According to the capture software, it shows that channel 1 (green LED) will only toggle when channel 2 (yellow LED) finishes the cycle. The button 1 is constantly being pressed on the keyboard without delay. However, the green LED remained pulsing in sync with the LED, ignoring the frequency of the keypresses.
 
 <img width="1430" height="748" alt="image4" src="https://github.com/user-attachments/assets/fe79309b-2c9d-4e83-aa2c-babe67044dfe" />
 
 Figure 4 shows the signals of green LED (channel 1) and yellow LED (channel 2). The sample rate is 50kHz.
-We have overcome the problems of receiver missing the signal; however, the system is still blocked due to HAL_Delay(). To overcome this problem, we should use a non-blocking algorithm to make green and yellow LEDs fully asynchronous.
+We have overcome the problems of receiver missing the signal; however, the system is still blocked due to *HAL_Delay()*. To overcome this problem, we should use a non-blocking algorithm to make green and yellow LEDs fully asynchronous.
 ## Experiment
 In the real experiment, the yellow and green LED flashes in sync, the green LED only toggles at when the yellow LED begins to light up. The same is true for the released signal shown on the terminal PuTTY. This is in agreement with what we observe with the logic analyzer.
 
 ## Part 3 UART Non-Blocking Interrupt Mode
-With minimal code, we can use prevTime and HAL_GetTick() to keep track of time and tell the processor when to blink the LED. We can turn this into a state machine. The yellow LED blinks at its frequency and green LED toggles every time number 1 is pressed on the keyboard.
+With minimal code, we can use prevTime and *HAL_GetTick()* to keep track of time and tell the processor when to blink the LED. We can turn this into a state machine. The yellow LED blinks at its frequency and green LED toggles every time number 1 is pressed on the keyboard.
 ## Logic Analyzer
 The logic analyzer shows that both green LED (PA5) and yellow LED (PA6) oscillate at their own pace and do not influence each other. They are now fully asynchronous.
 
@@ -70,21 +70,21 @@ In this section, we configure pin PA3 to receive 3 letters (char) before transmi
 
 <img width="1122" height="140" alt="Screenshot 2026-02-24 at 5 44 28 PM" src="https://github.com/user-attachments/assets/5a4265fe-d0e8-4178-ac52-de8f5b897b3f" />
 
-We first transmit a welcome message through HAL_UART_Transmit_DMA(), the user can now initiate the keypresses, when three characters are received, the green LED (PA5) will flash quickly and “Message Received\r\n” will be sent to the terminal (PuTTY). In this experiment, we also configure DMA to be in circular mode instead of normal mode so we don’t have to manually reenable HAL_UART_Receive_DMA() when three keypresses are received; we set the system to be in an infinite loop.
+We first transmit a welcome message through *HAL_UART_Transmit_DMA()*, the user can now initiate the keypresses, when three characters are received, the green LED (PA5) will flash quickly and “Message Received\r\n” will be sent to the terminal (PuTTY). In this experiment, we also configure DMA to be in circular mode instead of normal mode so we don’t have to manually reenable *HAL_UART_Receive_DMA()* when three keypresses are received; we set the system to be in an infinite loop.
 
 <img width="1430" height="767" alt="Screenshot 2026-02-24 at 6 08 56 PM" src="https://github.com/user-attachments/assets/140b7201-f4ac-4248-ba89-af2d0b6a51ea" />
 
 
 Figure 6 shows 4 signals measured by Logic Analyzer: Ch1- USART_Rx, Ch2-USART_Tx, Ch3-GreenLED (PA5), Ch4-YellowLED (PA6).
 
-According to the logic analyzer, we can see three negative edge signals (in red), these are the signals emitted by USART_Rx, we can see how far apart they are despite being pressed as fast as the author could (they are 1, 2, and 3 on the keyboard). The green signals are decoded into “Message Received\r\n”. We can also see channel 3 (Green LED) have a rising edge at the beginning of the signal transmission (due to HAL_UART_RxCpltCallback()) and a falling edge at the end of the signal (due to HAL_UART_TxCpltCallback()). 
+According to the logic analyzer, we can see three negative edge signals (in red), these are the signals emitted by USART_Rx, we can see how far apart they are despite being pressed as fast as the author could (they are 1, 2, and 3 on the keyboard). The green signals are decoded into “Message Received\r\n”. We can also see channel 3 (Green LED) have a rising edge at the beginning of the signal transmission (due to *HAL_UART_RxCpltCallback()*) and a falling edge at the end of the signal (due to *HAL_UART_TxCpltCallback()*). 
 
 <img width="1432" height="531" alt="Screenshot 2026-02-24 at 6 09 21 PM" src="https://github.com/user-attachments/assets/706df2fb-d3be-4708-8d67-c76d032268f8" />
 
 
 Figure 7 shows the UART signals being decoded using PulseView.
 
-Besides that, we can also see that there is a small time delay between the arrival of the signal 3 and the beginning of the signal (shown in yellow arrows). The time delay is about 23μs. Within this time, the DMA had been counting for three letters to arrive, once the third signal has arrived. DMA initiates an interrupt to the processor and the processor runs HAL_UART_RxCpltCallback() which involves lighting the green LED and transmitting the signal.
+Besides that, we can also see that there is a small time delay between the arrival of the signal 3 and the beginning of the signal (shown in yellow arrows). The time delay is about 23μs. Within this time, the DMA had been counting for three letters to arrive, once the third signal has arrived. DMA initiates an interrupt to the processor and the processor runs *HAL_UART_RxCpltCallback()* which involves lighting the green LED and transmitting the signal.
 ## How the DMA Liberates the CPU from Simple Movement of Data
 One of the best ways to observe the limited resources of a microcontroller is to force it to run at high frequency and see how it fumbles and misses a few beats with a logic analyzer.
 	
