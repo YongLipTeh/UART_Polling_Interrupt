@@ -1,4 +1,4 @@
-# UART_Polling_Interrupt
+# UART Polling Interrupt
 This is a 4-part UART experiment that shows how UART works in STM32
 1) 	UART polling mode, green LED misses most of the input
 2)	UART interrupt mode with delay, green LED and yellow LED are in sync
