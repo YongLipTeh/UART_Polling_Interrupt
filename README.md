@@ -31,7 +31,7 @@ Figure 2 shows the Logic Analyzer software and the initial data transmitted. The
 
 Figure 3 shows the signal being decoded with PulseView.
 ## Experiment
-In a real experiment, we can see that the green LED does not follow the click of 1, it only flashes when it is ready. Pressing 2 will check if the button is pressed or released, it is also very laggy because of the polling mode we are using.
+In a real experiment, we can see that the green LED does not follow the click of 1, it only flashes when it is ready. It is very laggy because of the polling mode we are using.
 
 # Part 2 UART Blocking Interrupt Mode
 To use interrupt in UART, we have to enable NVIC global interrupt in cubeIDE->connectivity->USART2. It is given the topmost preempt priority (priority 0). Instead of the earlier HAL functions, we use the interrupt versions: *HAL_UART_Transmit_IT()* and *HAL_UART_Receive_IT()*.
