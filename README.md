@@ -106,7 +106,7 @@ The 17 gaps correspond to the interrupt made to the processor. When it has to se
 
 The final gap (green arrow) is suspected to be due to the double buffer nature of the microprocessor, \r is loaded into the shift register and \n is waiting in the holding register. Since the processor has been woken up, it does not need to been interrupted again.
 
-The final proof that these gaps are actually interrupting to the CPU is the timing between the gaps. As shown by the mouse cursor in Figure 8, the gap between the interrupt is exactly 86μs. What is the significance of 86μs you ask? Well, it is almost 1/115200, which is the baud rate of our UART communication! 
+The final proof that these gaps are actually interrupts to the CPU is the timing between the gaps. As shown by the mouse cursor in Figure 8, the gap between the interrupt is exactly 86μs. What is the significance of 86μs you ask? Well, it is almost 1/115200, which is the baud rate of our UART communication! 
 
 Every time the CPU communicates with UART a single character, it is interrupted. If we were to use DMA, that number reduces to 2 (Figure 7). The gaps at the beginning and the end of the message are due to CPU having to toggle the green LED and tell DMA how long to listen for the message.
 
