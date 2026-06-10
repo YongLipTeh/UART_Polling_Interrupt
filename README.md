@@ -47,7 +47,7 @@ Using a logic analyzer, we can observe the green LED (PA5) and yellow LED (PA6).
 Figure 4 shows the signals of green LED (channel 1) and yellow LED (channel 2). The sample rate is 50kHz.
 We have overcome the problems of receiver missing the signal; however, the system is still blocked due to *HAL_Delay()*. To overcome this problem, we should use a non-blocking algorithm to make green and yellow LEDs fully asynchronous.
 ## Experiment
-In the real experiment, the yellow and green LED flashes in sync, the green LED only toggles at when the yellow LED begins to light up. The same is true for the released signal shown on the terminal PuTTY. This is in agreement with what we observe with the logic analyzer.
+In the real experiment, the yellow and green LED flashes in sync, the green LED only toggles when the yellow LED begins to light up. The same is true for the released signal shown on the terminal PuTTY. This is in agreement with what we observe with the logic analyzer.
 
 ## Part 3 UART Non-Blocking Interrupt Mode
 With minimal code, we can use prevTime and *HAL_GetTick()* to keep track of time and tell the processor when to blink the LED. We can turn this into a state machine. The yellow LED blinks at its frequency and green LED toggles every time number 1 is pressed on the keyboard.
@@ -88,7 +88,7 @@ Besides that, we can also see that there is a small time delay between the arriv
 ## How the DMA Liberates the CPU from Simple Movement of Data
 One of the best ways to observe the limited resources of a microcontroller is to force it to run at high frequency and see how it fumbles and misses a few beats with a logic analyzer.
 	
-DMA and interrupts both work on similar principles, they interrupt the processor when it is warranted. Certain tasks such as memory-to-memory transfers can be done using code alone and can be performed faster than DMA transfers. Here, the DMA acts as a butler to perform these mundane tasks, thus freeing up precious processors time so that it can perform other more critical tasks.
+DMA and interrupts both work on similar principles, they interrupt the processor when it is warranted. Certain tasks such as memory-to-memory transfers should not bother the CPU and can be performed faster than DMA transfers. Here, the DMA acts as a butler to perform these mundane tasks, thus freeing up precious processors time so that it can perform other more critical tasks.
 
 To achieve this, we configure in the while loop the task of switching the LED on and off at high speeds. Using the BSRR register, instead of the usual ODR, which modifies all the bits and slows down the switching speed. BSRR is a real single bit modification register.
 GPIOA->BSRR = (1 << 6); and GPIOA->BSRR = (1 << (6 + 16)) within the while loop.
